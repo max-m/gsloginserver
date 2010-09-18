@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 using namespace std;
 
 CBF2Available :: CBF2Available( CGSServer* nGSServer )
@@ -18,7 +19,6 @@ CBF2Available :: CBF2Available( CGSServer* nGSServer )
 		cout << "[bf2.available.gamespy.com] error binding on port " << 27900 << endl;
 		m_GSServer->m_Exiting = true;
 	}
-	
 }
 
 CBF2Available :: ~CBF2Available( )
@@ -42,12 +42,8 @@ unsigned int CBF2Available :: SetFD( void* fd, void* send_fd, int* nfds )
 
 bool CBF2Available :: Update( void* fd, void* send_fd )
 {
-	return !m_Socket->HasError();
-
 	if( m_Socket )
 	{
-		//m_Socket->Broadcast( 27900, "......." );
-		
 		sockaddr_in Client;
 
 		string message;
@@ -55,16 +51,19 @@ bool CBF2Available :: Update( void* fd, void* send_fd )
 
 		if( !message.empty() )
 		{
-			if( message == ".....battlefield2." )
-			{
-				cout << "sending" << endl;
-				m_Socket->SendTo( Client, "......." );
-			}
-			else
-				cout << "MSG RECIEVED: " << message << endl;
+			static const char expected[] = {
+				0x09, 0x00, 0x00, 0x00, 0x00, 0x62, 0x61, 0x74, 0x74, 
+				0x6c, 0x65, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x32, 0x00 
+			};
+
+			static const unsigned char send[] = {
+				0xfe, 0xfd, 0x09, 0x00, 0x00, 0x00, 0x00 
+			};
+
+			if( strncmp(message.c_str(), expected, 18) == 0 )
+				m_Socket->SendTo( Client, (char*)send, 7 );
 		}
 		
-
 		if( m_Socket->HasError() )
 			m_Socket->Reset();
 	}

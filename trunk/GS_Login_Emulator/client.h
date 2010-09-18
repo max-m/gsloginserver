@@ -47,6 +47,7 @@ class CClientCM : public CClient
 {
 private:
 	unsigned int m_State;
+	bool m_BF2_15;
 	
 	std::string m_Name;
 	std::string m_Password;

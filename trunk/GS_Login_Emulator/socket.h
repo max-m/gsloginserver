@@ -179,6 +179,7 @@ public:
 	virtual ~CUDPSocket( );
 
 	virtual bool SendTo( struct sockaddr_in sin, std::string message );
+	virtual bool SendTo( struct sockaddr_in sin, char* message, size_t len );
 	virtual bool SendTo( std::string address, unsigned short port, std::string message );
 	virtual bool Broadcast( unsigned short port, std::string message );
 	virtual void SetBroadcastTarget( std::string subnet );

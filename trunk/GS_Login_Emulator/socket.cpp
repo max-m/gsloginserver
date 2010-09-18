@@ -438,6 +438,17 @@ bool CUDPSocket :: SendTo( struct sockaddr_in sin, string message )
 	return true;
 }
 
+bool CUDPSocket :: SendTo( struct sockaddr_in sin, char* message, size_t len )
+{
+	if( m_Socket == INVALID_SOCKET || m_HasError )
+		return false;
+
+	if( sendto( m_Socket, message, len, 0, (struct sockaddr*)&sin, sizeof(sin) ) == -1 )
+		return false;
+
+	return true;
+}
+
 bool CUDPSocket :: SendTo( string address, unsigned short port, string message )
 {
 	if( m_Socket == INVALID_SOCKET || m_HasError )

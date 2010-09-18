@@ -266,6 +266,7 @@ CClientCM :: CClientCM( CGPCM* nGPCM, CTCPSocket* nSocket ) : CClient( nSocket, 
 {
 	m_GPCM = nGPCM;
 	m_State = 0;	// dunno why but sometimes m_State isn't getting zerod by CClient
+	m_BF2_15 = false;
 
 	cout << " - client connected    : " << m_Socket->GetIPString() << ":" << m_Socket->GetPort() << endl;
 }
@@ -314,6 +315,26 @@ bool CClientCM :: Update( void* fd )
 					m_State++;
 
 			}
+			else if( RecvVals.size() == 24 && RecvVals[0] == "login" ) // BF2 1.5
+			{
+				m_BF2_15 = true;
+				m_Name = RecvVals[4];
+				m_ClientChallenge = RecvVals[2];
+				m_Response = RecvVals[10];
+
+				if( SendProof() )
+					m_State++;
+			}
+			else if( RecvVals.size() == 20 && RecvVals[0] == "login" ) // BF2 1.5
+			{
+				m_BF2_15 = true;
+				m_Name = RecvVals[4];
+				m_ClientChallenge = RecvVals[2];
+				m_Response = RecvVals[6];
+
+				if( SendProof() )
+					m_State++;
+			}
 			else if( RecvVals.size() == 18 && RecvVals[0] == "newuser" )
 				HandleNewUser( RecvVals );
 
@@ -357,6 +378,31 @@ bool CClientCM :: Update( void* fd )
 			}
 			else if( RecvVals.size() == 8 && RecvVals[0] == "getprofile" ) // retrieve account
 				SendProfile( true );
+			else if( m_BF2_15 )
+			{
+				static unsigned int State = 0;
+
+				switch( State )
+				{
+					case 0:
+					case 1:
+					case 3:
+						m_Socket->ClearSendBuffer( );
+						m_Socket->PutBytes( "\\ka\\\\final\\" );
+						State++;
+						break;
+
+					case 2:
+						m_Socket->ClearSendBuffer( );
+						stringstream SendMessage;
+						SendMessage << "\\lt\\"
+									<< GenerateRandomString( "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][", 22 ) << "__" 
+									<< "\\final\\";
+						m_Socket->PutBytes( SendMessage.str() );
+						State++;
+						break;
+				}
+			}
 
 			break;
 
@@ -608,12 +654,12 @@ CClientSP :: CClientSP( CGPSP* nGPSP, CTCPSocket* nSocket ) : CClient( nSocket, 
 	m_GPSP = nGPSP;
 	m_State = 0;
 
-	//cout << "[GPSP] client connected    : " << m_Socket->GetIPString() << ":" << m_Socket->GetPort() << endl;
+	//cout << " - client connected    : " << m_Socket->GetIPString() << ":" << m_Socket->GetPort() << endl;
 }
 
 CClientSP :: ~CClientSP( )
 {
-	//cout << "[GPSP] client disconnected : " << m_Socket->GetIPString() << ":" << m_Socket->GetPort() << endl;
+	//cout << " - client disconnected : " << m_Socket->GetIPString() << ":" << m_Socket->GetPort() << endl;
 }
 
 
@@ -656,6 +702,22 @@ bool CClientSP :: Update( void* fd )
 				SendCheck( );
 				m_State++;
 			}
+			else if( RecvVals.size() == 12 && RecvVals[0] == "nicks" ) // BF2 1.5
+			{
+				map< string, string > ClientData = m_GSServer->m_DB->GetData( RecvVals[2], RecvVals[4] );
+				m_Socket->ClearSendBuffer( );
+				
+				if( ClientData.empty() )
+					m_Socket->PutBytes( "\\nr\\0\\ndone\\\\final\\" );
+				else
+				{
+					SendGPSP( 1 );
+					m_State++;
+				}
+
+				break;
+			}
+
 
 			break;
 
