@@ -58,7 +58,7 @@
                     try
                     {
                         gHostsSet = true;
-                        SetHostsFile( fso, shell, "'.gethostbyname($_SERVER['SERVER_NAME']).'" );
+                        SetHostsFile( fso, shell, "'.gethostbyname( $_SERVER['SERVER_NAME'] ).'" );
 						
                         shell.CurrentDirectory = bf2_dir;
                         shell.Run( "\\"" + bf2_dir + "\\\\BF2.exe\\"", 1, true );
