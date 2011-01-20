@@ -1,3 +1,4 @@
+#pragma once
 /* MD5
  converted to C++ class by Frank Thilo (thilo@unix-ag.org)
  for bzflag (http://www.bzflag.org)

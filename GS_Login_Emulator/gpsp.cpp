@@ -25,7 +25,6 @@ CGPSP :: CGPSP( CGSServer* nGSServer )
 CGPSP :: ~CGPSP( )
 {
 	delete m_Socket;
-	m_Socket = NULL;
 
 	for( vector<CClientSP*>::iterator i = m_Clients.begin(); i != m_Clients.end(); i++ )
 		delete *i;

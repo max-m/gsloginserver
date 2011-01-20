@@ -24,7 +24,6 @@ CGPCM :: CGPCM( CGSServer* nGSServer )
 CGPCM :: ~CGPCM( )
 {
 	delete m_Socket;
-	m_Socket = NULL;
 
 	for( vector<CClientCM*>::iterator i = m_Clients.begin(); i != m_Clients.end(); i++ )
 		delete *i;

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _GPSP_H_
 #define _GPSP_H_
 

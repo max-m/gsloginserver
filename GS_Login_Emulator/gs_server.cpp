@@ -20,8 +20,8 @@ using namespace std;
  #define MILLISLEEP( x ) usleep( ( x ) * 1000 )
 #endif
 
-CGSServer* gGSServer = NULL;
-string gCFGFile;
+CGSServer*	gGSServer = NULL;
+string		gCFGFile;
 
 void SignalCatcher( int s )
 {
@@ -51,7 +51,6 @@ int main( int argc, char** argv )
     if( WSAStartup( MAKEWORD(2, 2), &wsadata ) != 0 )
     {
 		cout << "[WINSOCK] error starting winsock" << endl;
-		//logfile.close():
 		return EXIT_FAILURE;
 	}
 #endif
@@ -68,7 +67,7 @@ int main( int argc, char** argv )
 
 	while( true )
 	{
-		if( gGSServer->Update( 50000 ) )
+		if( gGSServer->Update(50000) )
 			break;
 	}
 
@@ -84,56 +83,31 @@ int main( int argc, char** argv )
 	return EXIT_SUCCESS;
 }
 
-CGSServer :: CGSServer( CConfig* nCFG )
+CGSServer :: CGSServer( CConfig* CFG )
+	: m_Exiting(false)
 {
-	m_CFG = nCFG;
-	m_Exiting = false;
-
-	m_DB = NULL;
-	m_GPCM = NULL;
-	m_GPSP = NULL;
-	m_BF2Available = NULL;
-
-	if( m_CFG->GetString("db_type", "sqlite3") == "sqlite3" )
-		m_DB = new CSQLite3( m_CFG->GetString("db_sqlite3_file", "gs_login_server.db3") );
+	if( CFG->GetString("db_type", "sqlite3") == "sqlite3" )
+		m_DB = new CSQLite3( CFG->GetString("db_sqlite3_file", "gs_login_server.db3") );
 	else
-		m_DB = new CMySQL( m_CFG->GetString("db_mysql_server", string()), m_CFG->GetString("db_mysql_database", "gs_login_server"), m_CFG->GetString("db_mysql_user", string()), m_CFG->GetString("db_mysql_password", string()), m_CFG->GetInt("db_mysql_port", 0) );
+		m_DB = new CMySQL( CFG->GetString("db_mysql_server", string()), CFG->GetString("db_mysql_database", "gs_login_server"), 
+						   CFG->GetString("db_mysql_user", string()), CFG->GetString("db_mysql_password", string()), CFG->GetInt("db_mysql_port", 0) );
 
 	if( m_DB->HasError() )
 		m_Exiting = true;
 	else
 	{
-		m_GPCM = new CGPCM( this );
-		m_GPSP = new CGPSP( this );
-		m_BF2Available = new CBF2Available( this );
+		m_GPCM			= new CGPCM( this );
+		m_GPSP			= new CGPSP( this );
+		m_BF2Available	= new CBF2Available( this );
 	}
 }
 
 CGSServer :: ~CGSServer( )
 {
-	if( m_DB )
-	{
-		delete m_DB;
-		m_DB = NULL;
-	}
-
-	if( m_GPCM )
-	{
-		delete m_GPCM;
-		m_GPCM = NULL;
-	}
-
-	if( m_GPSP )
-	{
-		delete m_GPSP;
-		m_GPSP = NULL;
-	}
-
-	if( m_BF2Available )
-	{
-		delete m_BF2Available;
-		m_BF2Available = NULL;
-	}
+	delete m_DB;
+	delete m_GPCM;
+	delete m_GPSP;
+	delete m_BF2Available;
 }
 
 bool CGSServer :: Update( long usecBlock )
@@ -144,7 +118,6 @@ bool CGSServer :: Update( long usecBlock )
 	unsigned int NumFDs = 0;
 
 	// take every socket we own and throw it in one select statement so we can block on all sockets
-
 	int nfds = 0;
 	fd_set fd;
 	fd_set send_fd;
@@ -177,6 +150,8 @@ bool CGSServer :: Update( long usecBlock )
 	m_GPCM->Update(&fd, &send_fd);
 	m_GPSP->Update(&fd, &send_fd);
 	m_BF2Available->Update(&fd, &send_fd);
+
+	MILLISLEEP( usecBlock - tv.tv_usec );
 	
 	return false;
 }

@@ -527,6 +527,7 @@ bool CClientCM :: HandleNewUser( vector<string>& RecvVals )
 		len = gspassenc( pw_decrypt );
 
 		m_Password = pw_decrypt;
+		free( pw_decrypt );
 
 		m_GSServer->m_DB->CreateUser( m_Name, m_Password, RecvVals[2], "00" );
 

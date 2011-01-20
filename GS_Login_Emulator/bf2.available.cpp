@@ -24,7 +24,6 @@ CBF2Available :: CBF2Available( CGSServer* nGSServer )
 CBF2Available :: ~CBF2Available( )
 {
 	delete m_Socket;
-	m_Socket = NULL;
 }
 
 unsigned int CBF2Available :: SetFD( void* fd, void* send_fd, int* nfds )
