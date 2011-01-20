@@ -12,6 +12,7 @@
 #include <fstream> 
 #include <csignal>
 #include <sstream>
+#include <cstdlib>
 using namespace std;
 
 #ifdef WIN32
