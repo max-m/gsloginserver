@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _GPCM_H_
 #define _GPCM_H_
 
