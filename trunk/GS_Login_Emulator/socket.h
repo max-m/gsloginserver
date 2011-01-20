@@ -3,6 +3,7 @@
 #define _SOCKET_H_
 
 #include <string>
+#include <cstring>
 
 #ifdef WIN32
  #include <winsock2.h>
